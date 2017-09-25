@@ -1,6 +1,12 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
 
 class CommentInput extends Component {
+  // 限制配置参数的类型
+  static propTypes = {
+    onSubmit: PropTypes.func
+  }
+
   constructor() {
     super()
     this.state = {
@@ -27,10 +33,40 @@ class CommentInput extends Component {
     // 函数并传入子组件数据即可
     if(this.props.onSubmit) {
       const { username, content } = this.state
-      this.props.onSubmit({username, content})
+      this.props.onSubmit({
+        username,
+        content,
+        createdTime: +new Date()
+      })
     }
 
     this.setState({ content: '' })
+  }
+
+  // 遵循通用的私有方法定义约定
+  _saveUsername(username) {
+    localStorage.setItem('username', username)
+  }
+
+  _loadUsername() {
+    const username = localStorage.getItem('username')
+
+    if(username) {
+      this.setState({username})
+    }
+  }
+
+  handleUsernameBlur(event) {
+    this._saveUsername(event.target.value)
+  }
+
+  componentWillMount() {
+    this._loadUsername()
+  }
+
+  // 组件挂载完以后自动调用
+  componentDidMount() {
+    this.textarea.focus()
   }
 
   render() {
@@ -41,14 +77,16 @@ class CommentInput extends Component {
           <span className='comment-field-name'>用户名：</span>
           <div className='comment-field-input'>
             <input value={this.state.username}
-                   onChange={this.handleUserChange.bind(this)}/>
+                   onChange={this.handleUserChange.bind(this)}
+                   onBlur={this.handleUsernameBlur.bind(this)}/>
           </div>
         </div>
         <div className='comment-field'>
           <span className='comment-field-name'>评论内容：</span>
           <div className='comment-field-input'>
             <textarea value={this.state.content}
-                      onChange={this.handleContentChange.bind(this)}/>
+                      onChange={this.handleContentChange.bind(this)}
+                      ref={(textarea) => this.textarea = textarea}/>
           </div>
         </div>
         <div className='comment-field-button'>
