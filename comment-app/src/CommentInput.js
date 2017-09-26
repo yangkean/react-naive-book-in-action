@@ -1,18 +1,26 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import wrapWithLoadData from './wrapWithLoadData'
 
 class CommentInput extends Component {
   // 限制配置参数的类型
   static propTypes = {
-    onSubmit: PropTypes.func
+    onSubmit: PropTypes.func,
+    data: PropTypes.any,
+    saveData: PropTypes.func.isRequired,
   }
 
-  constructor() {
-    super()
+  constructor(props) {
+    super(props)
     this.state = {
-      username: '',
+      username: props.data,
       content: ''
     }
+  }
+
+  // 组件挂载完以后自动调用
+  componentDidMount() {
+    this.textarea.focus()
   }
 
   handleUserChange(event) {
@@ -43,30 +51,8 @@ class CommentInput extends Component {
     this.setState({ content: '' })
   }
 
-  // 遵循通用的私有方法定义约定
-  _saveUsername(username) {
-    localStorage.setItem('username', username)
-  }
-
-  _loadUsername() {
-    const username = localStorage.getItem('username')
-
-    if(username) {
-      this.setState({username})
-    }
-  }
-
   handleUsernameBlur(event) {
-    this._saveUsername(event.target.value)
-  }
-
-  componentWillMount() {
-    this._loadUsername()
-  }
-
-  // 组件挂载完以后自动调用
-  componentDidMount() {
-    this.textarea.focus()
+    this.props.saveData(event.target.value)
   }
 
   render() {
@@ -99,4 +85,6 @@ class CommentInput extends Component {
   }
 }
 
-export default CommentInput 
+CommentInput = wrapWithLoadData(CommentInput, 'username')
+
+export default CommentInput
